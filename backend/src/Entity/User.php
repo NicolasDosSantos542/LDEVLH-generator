@@ -4,22 +4,28 @@ namespace App\Entity;
 
 use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 class User
 {
+
+    public const ROLES = ['master','player'];
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 3)]
+    #[Assert\NotBlank]
     private ?string $name = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $password = null;
+     private ?string $password = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\Choice(choices: User::ROLES, message:'Choisissez un role valide')]
     private ?string $role = null;
 
     public function getId(): ?int
