@@ -15,17 +15,24 @@ use Symfony\Component\HttpFoundation\Request;
 class GameController extends AbstractController
 {
     #[Route('/games', name: 'all_games')]
-    public function showGames( GameRepository $game): JsonResponse
+    public function showGames(EntityManagerInterface $em,): JsonResponse
     {
-        $records = $game->findAll();
+        $repository = $em->getRepository(Game::class);
+        $records = $repository->findAll();
+        $output = [];
+        foreach ($records as $record) {
+            $output[] = $record->getGame();
+        }
 
-        return new JsonResponse($records);
+        return new JsonResponse($output);
     }
+
+    
     #[Route('/game', name: 'create_game', methods: ['POST'])]
     public function createGame(EntityManagerInterface $em, ValidatorInterface $validator, Request $request): JsonResponse
     {
         $parameters = json_decode($request->getContent(), false);
-   
+
         $game = new Game();
         $game->setName($parameters->name);
         $game->setCreatorId($parameters->user_id);
@@ -42,6 +49,6 @@ class GameController extends AbstractController
         // actually executes the queries (i.e. the INSERT query)
         $em->flush();
 
-        return new JsonResponse(['message'=>'Saved new game with id ' . $game->getId(), "data"=>$game]);
+        return new JsonResponse(['message' => 'Saved new game with id ' . $game->getId(), "data" => $game]);
     }
 }

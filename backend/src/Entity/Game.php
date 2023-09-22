@@ -47,4 +47,13 @@ class Game
 
         return $this;
     }
+
+    public function getGame(): array
+    {
+        return [
+            "id" => $this->id,
+            "name" => $this->name,
+            "creatorId" => $this->creatorId
+        ];
+    }
 }
