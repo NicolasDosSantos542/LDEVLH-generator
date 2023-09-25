@@ -11,7 +11,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\HttpException;
- 
+
 
 
 class GameController extends AbstractController
@@ -33,9 +33,9 @@ class GameController extends AbstractController
     #[Route('/game', name: 'create_game', methods: ['POST'])]
     public function createGame(EntityManagerInterface $em, ValidatorInterface $validator, Request $request): JsonResponse
     {
-       
+
         $parameters = json_decode($request->getContent(), false);
-        if(!$parameters){
+        if (!$parameters) {
             throw new HttpException('Invalid parameters');
         }
         $game = new Game();
@@ -53,15 +53,65 @@ class GameController extends AbstractController
         // actually executes the queries (i.e. the INSERT query)
         $em->flush();
 
-        return new JsonResponse(['message' => 'Saved new game with id ' . $game->getId(), "data" => $game]);
+        return new JsonResponse(['message' => 'Saved new game with id ' . $game->getId(), "data" => $game->getGame()]);
     }
 
-    #[Route('game/{id}', methods:['PUT'], name : "update_game")]
-    public function updateGame(EntityManagerInterface $em, ValidatorInterface $validator, Request $request){
+    #[Route('game/{id}', methods: ['PUT'], name: "update_game")]
+    public function updateGame(EntityManagerInterface $entityManager, ValidatorInterface $validator, Request $request, int $id)
+    {
         $parameters = json_decode($request->getContent(), false);
-        if(!$parameters){
+        if (!$parameters) {
             throw new HttpException('Invalid parameters');
         }
+        $game = $entityManager->getRepository(Game::class)->find($id);
 
+        if (!$game) {
+            throw $this->createNotFoundException(
+                'No game found for id ' . $id
+            );
+        }
+        if (isset($parameters->name)) {
+            $game->setName($parameters->name);
+        }
+        if (isset($parameters->creatorId)) {
+            $game->setCreatorId($parameters->creatorId);
+        }
+
+        $entityManager->flush();
+
+        return $this->redirectToRoute('game_show', [
+            'id' => $game->getId()
+        ]);
+    }
+
+
+    #[Route('/game/{id}', name: 'game_show', methods: ['GET'])]
+    public function getGamebyId(GameRepository $repository, int $id): JsonResponse
+    {
+        $game = $repository->find($id);
+
+        if (!$game) {
+            throw $this->createNotFoundException(
+                'No game found for id ' . $id
+            );
+        }
+
+        return new JsonResponse($game->getGame());
+    }
+
+
+    #[Route('/game/{id}', name: 'game_delete', methods: ['DELETE'])]
+    public function deleteGame(EntityManagerInterface $entityManager, GameRepository $repository, int $id)
+    {
+        $game = $repository->find($id);
+        if (!$game) {
+            throw $this->createNotFoundException(
+                'No game found for id ' . $id
+            );
+        }
+        $entityManager->remove($game);
+        $entityManager->flush();
+
+        return $this->redirectToRoute('all_games');
     }
 }
