@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\GameRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: GameRepository::class)]
@@ -18,6 +20,14 @@ class Game
 
     #[ORM\Column]
     private ?int $creatorId = null;
+
+    #[ORM\OneToMany(mappedBy: 'gameId', targetEntity: Step::class, orphanRemoval: true)]
+    private Collection $steps;
+
+    public function __construct()
+    {
+        $this->steps = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -55,5 +65,35 @@ class Game
             "name" => $this->name,
             "creatorId" => $this->creatorId
         ];
+    }
+
+    /**
+     * @return Collection<int, Step>
+     */
+    public function getSteps(): Collection
+    {
+        return $this->steps;
+    }
+
+    public function addStep(Step $step): static
+    {
+        if (!$this->steps->contains($step)) {
+            $this->steps->add($step);
+            $step->setGameId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeStep(Step $step): static
+    {
+        if ($this->steps->removeElement($step)) {
+            // set the owning side to null (unless already changed)
+            if ($step->getGameId() === $this) {
+                $step->setGameId(null);
+            }
+        }
+
+        return $this;
     }
 }
