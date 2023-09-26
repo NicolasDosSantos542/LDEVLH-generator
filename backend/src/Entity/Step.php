@@ -2,11 +2,13 @@
 
 namespace App\Entity;
 
-use App\Repository\StepRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\GameRepository;
+use App\Repository\StepRepository;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: StepRepository::class)]
 class Step
@@ -17,16 +19,23 @@ class Step
     private ?int $id = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Assert\Type('string')]
+    #[Assert\NotBlank]
     private ?string $description = null;
 
     #[ORM\Column]
+    #[Assert\NotBlank]
+    #[Assert\Type('integer')]
     private ?int $stepNumber = null;
 
     #[ORM\ManyToOne(inversedBy: 'steps')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Assert\NotBlank]
+    #[Assert\Type('integer')]
     private ?Game $gameId = null;
 
     #[ORM\OneToMany(mappedBy: 'step', targetEntity: Question::class, orphanRemoval: true)]
+    #[Assert\NotBlank]
     private Collection $questions;
 
     public function __construct()
