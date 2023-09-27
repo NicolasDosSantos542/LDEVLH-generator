@@ -31,7 +31,6 @@ class Step
     #[ORM\ManyToOne(inversedBy: 'steps')]
     #[ORM\JoinColumn(nullable: false)]
     #[Assert\NotBlank]
-    #[Assert\Type('integer')]
     private ?Game $gameId = null;
 
     #[ORM\OneToMany(mappedBy: 'step', targetEntity: Question::class, orphanRemoval: true)]

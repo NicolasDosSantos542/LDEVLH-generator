@@ -35,6 +35,8 @@ class StepController extends AbstractController
         QuestionRepository $question,
     ): JsonResponse {
 
+        $step = new Step();
+
         $parameters = json_decode($request->getContent(), false);
         $questions = [];
 
@@ -46,8 +48,9 @@ class StepController extends AbstractController
             foreach ($parameters->questions as $questionParam) {
                 $tempQuestion = new Question();
                 $tempQuestion->setDescription($questionParam->description);
-                $tempQuestion->setStep($questionParam->step);
+                $tempQuestion->setStep($step);
                 $tempQuestion->setNextStep($questionParam->nextStep);
+                $em->persist($tempQuestion);
                 $questions[] = $tempQuestion;
             }
         } else {
@@ -61,13 +64,12 @@ class StepController extends AbstractController
 
 
 
-        $step = new Step();
 
         $step->setDescription($parameters->description);
         $step->setStepNumber($parameters->stepNumber);
-        foreach($questions as $question){
+        $step->setGameId($game);
+        foreach ($questions as $question) {
             $step->addQuestion($question);
-
         }
 
         $errors = $validator->validate($step);
@@ -79,6 +81,7 @@ class StepController extends AbstractController
 
         // tell Doctrine you want to (eventually) save the Step (no queries yet)
         $em->persist($step);
+
 
         // actually executes the queries (i.e. the INSERT query)
         $em->flush();
