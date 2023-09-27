@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\GameRepository;
+use App\Repository\StepRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -24,8 +25,9 @@ class Game
     #[ORM\OneToMany(mappedBy: 'gameId', targetEntity: Step::class, orphanRemoval: true)]
     private Collection $steps;
 
-    public function __construct()
+    public function __construct(StepRepository $stepRepo)
     {
+
         $this->steps = new ArrayCollection();
     }
 
@@ -63,7 +65,8 @@ class Game
         return [
             "id" => $this->id,
             "name" => $this->name,
-            "creatorId" => $this->creatorId
+            "creatorId" => $this->creatorId,
+            "steps" => $this->steps
         ];
     }
 

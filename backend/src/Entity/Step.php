@@ -82,6 +82,14 @@ class Step
 
         return $this;
     }
+    public function getStep(){
+        return [
+            "id"=>$this->id,
+            "description"=>$this->description,
+            "stepNumber"=>$this->stepNumber,
+            "gameId"=>$this->gameId->getId(),  
+        ];
+    }
 
     /**
      * @return Collection<int, Question>
