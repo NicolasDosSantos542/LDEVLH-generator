@@ -18,13 +18,13 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 class GameController extends AbstractController
 {
     #[Route('/games', name: 'all_games')]
-    public function showGames(EntityManagerInterface $em,): JsonResponse
+    public function showGames(EntityManagerInterface $em, StepRepository $stepRepository, GameRepository $repository): JsonResponse
     {
         $repository = $em->getRepository(Game::class);
         $records = $repository->findAll();
         $output = [];
         foreach ($records as $record) {
-            $output[] = $record->getGame();
+            $output[] = $this->getGamebyId(  $stepRepository,  $repository, $record->getId(), false);
         }
 
         return new JsonResponse($output);
@@ -87,7 +87,7 @@ class GameController extends AbstractController
 
 
     #[Route('/game/{id}', name: 'game_show', methods: ['GET'])]
-    public function getGamebyId(StepRepository $stepRepository, GameRepository $repository, int $id): JsonResponse
+    public function getGamebyId(StepRepository $stepRepository, GameRepository $repository, int $id, $fromRoute=true)
     {
         $gameObject = $repository->find($id);
 
@@ -104,8 +104,11 @@ class GameController extends AbstractController
         }
         $game  = $gameObject->getGame();
         $game["steps"] = $steps;
-        
-        return new JsonResponse($game);
+        if($fromRoute){
+            return new JsonResponse($game);
+        }else{
+            return $game;
+        }
     }
 
     #[Route('/game/{id}', name: 'game_delete', methods: ['DELETE'])]
