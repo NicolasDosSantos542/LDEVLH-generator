@@ -25,7 +25,7 @@ class Game
     #[ORM\OneToMany(mappedBy: 'gameId', targetEntity: Step::class, orphanRemoval: true)]
     private Collection $steps;
 
-    public function __construct(StepRepository $stepRepo)
+    public function __construct()
     {
 
         $this->steps = new ArrayCollection();
@@ -66,7 +66,7 @@ class Game
             "id" => $this->id,
             "name" => $this->name,
             "creatorId" => $this->creatorId,
-            "steps" => $this->steps
+            "steps" => []
         ];
     }
 

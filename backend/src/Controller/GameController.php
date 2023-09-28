@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Game;
 use App\Repository\GameRepository;
+use App\Repository\StepRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -86,19 +87,26 @@ class GameController extends AbstractController
 
 
     #[Route('/game/{id}', name: 'game_show', methods: ['GET'])]
-    public function getGamebyId(GameRepository $repository, int $id): JsonResponse
+    public function getGamebyId(StepRepository $stepRepository, GameRepository $repository, int $id): JsonResponse
     {
-        $game = $repository->find($id);
+        $gameObject = $repository->find($id);
 
-        if (!$game) {
+
+        if (!$gameObject) {
             throw $this->createNotFoundException(
                 'No game found for id ' . $id
             );
         }
-
-        return new JsonResponse($game->getGame());
+        $querysteps = $stepRepository->findBy(['gameId' => $id]);
+        $steps = [];
+        foreach ($querysteps as $step) {
+            $steps[] = $step->getStep();
+        }
+        $game  = $gameObject->getGame();
+        $game["steps"] = $steps;
+        
+        return new JsonResponse($game);
     }
-
 
     #[Route('/game/{id}', name: 'game_delete', methods: ['DELETE'])]
     public function deleteGame(EntityManagerInterface $entityManager, GameRepository $repository, int $id)
